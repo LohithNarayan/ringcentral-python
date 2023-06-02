@@ -1,4 +1,10 @@
-import urllib
+import sys
+if sys.version_info[0] == 3:
+    import urllib.request
+else: 
+    import urllib
+
+#import urllib
 from dotenv import dotenv_values
 
 #from config import USERNAME, EXTENSION, PASSWORD, APP_KEY, APP_SECRET, SERVER, MOBILE
@@ -12,8 +18,8 @@ def main():
     platform = sdk.platform()
     platform.login(jwt = env['RINGCENTRAL_JWT_TOKEN'])
 
-    params = {'from': {'phoneNumber': env['RINGCENTRAL_USERNAME']},'to': [{'phoneNumber': env['RINGCENTRAL_RECEIVER']}],'text': "MMS message"}
-    response = platform.post('/restapi/v1.0/account/~/extension/~/mms', params)
+    #params = {'from': {'phoneNumber': env['RINGCENTRAL_USERNAME']},'to': [{'phoneNumber': env['RINGCENTRAL_RECEIVER']}],'text': "MMS message"}
+   # response = platform.post('/restapi/v1.0/account/~/extension/~/mms', params)
 
 
     #platform.login(USERNAME, EXTENSION, PASSWORD)
@@ -29,28 +35,31 @@ def main():
             mms_number = phone_number.phoneNumber
 
     print('MMS Phone Number: ' + mms_number)
+    
 
     # Step 2. Send MMS
+    with urlopen("http://www.python.org") as url:
+        s = url.read()
 
     attachment = (
         'test.png',
-        urllib.urlopen('https://developers.ringcentral.com/assets/images/ico_case_crm.png').read(),
+        s,
         'image/png'
     )
 
     builder = sdk.create_multipart_builder()
     builder.set_body({
         'from': {'phoneNumber': mms_number},
-        'to': [{'phoneNumber': phone_number}],
+        'to': [{'phoneNumber': env['RINGCENTRAL_RECEIVER']}],
         'text': 'MMS from Python'  # this is optional
-    })
+    })    
+    
     builder.add(attachment)
 
     request = builder.request('/account/~/extension/~/sms')
 
     response = platform.send_request(request)
     print('Sent MMS: ' + response.json().uri)
-
 
 if __name__ == '__main__':
     main()
